@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper   
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"   
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zzd.dao.MeetDao">
+    <select id="list" resultType="map">
+        select m.*,group_concat(s.name) server ,t.name types from meet m left join type t on m.type = t.id left join meet_s ms on ms.mid = m.id left join server s on s.id = ms.sid
+        <where>
+            <if test="name != null and name !=''">
+                m.name like concat('%',#{name},'%')
+            </if>
+            <if test="type != null and type != ''">
+                and m.type=#{type}
+            </if>
+            <if test="startTime != null and startTime != ''">
+                and m.startTime >= #{startTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                and m.endTime &lt;= #{endTime}
+            </if>
+        </where>
+
+        group by m.createTime
+    </select>
+    <select id="selectType" resultType="map">
+        select * from type
+    </select>
+    <select id="selectServer" resultType="map">
+        select * from server
+    </select>
+    <select id="selectOne" resultType="map">
+        select m.*,group_concat(ms.sid) sid,group_concat(s.name) server ,t.name types from meet m left join type t on m.type = t.id left join meet_s ms on ms.mid = m.id left join server s on s.id = ms.sid where m.id=#{id}
+    </select>
+    <insert id="insertMeet" useGeneratedKeys="true" keyProperty="id">
+        insert into meet values (null,#{code},#{type},#{name},#{startTime},#{endTime},now());
+    </insert>
+    <insert id="insertMid">
+        insert into meet_s values
+        <foreach collection="sid" separator="," item="sid">
+            (#{mid},#{sid})
+        </foreach>
+    </insert>
+    <delete id="deleteMeet">
+        delete from meet where id=#{id}
+    </delete>
+    <delete id="deleteMid">
+        delete from meet_s where mid=#{id}
+    </delete>
+    <update id="updateMeet">
+        update meet set code=#{code},type=#{type},name=#{name},startTime=#{startTime},endTime=#{endTime},createTime=now() where id=#{id}
+    </update>
+</mapper>
